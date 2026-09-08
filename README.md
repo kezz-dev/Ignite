@@ -66,4 +66,4 @@ All four tabs are wired to real data and a real logging flow exists end-to-end. 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — data schema, file structure, how the pieces fit
 - [`docs/ISSUES.md`](docs/ISSUES.md) — real problems hit during development and how they were actually solved
 - [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) — color tokens, typography rules, signature visual motifs
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — what's next, what's intentionally deferred
+
