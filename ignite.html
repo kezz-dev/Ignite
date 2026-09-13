@@ -161,6 +161,33 @@
   .aw-finish-btn { width:100%; padding:16px; border:none; border-radius:16px; background:var(--accent); color:#0B0B0D; font-size:15px; font-weight:800; cursor:pointer; }
   .aw-finish-btn:disabled { opacity:0.6; }
 
+  .h-resume-banner { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid rgba(255,78,31,0.3); border-radius:16px; padding:14px 16px; margin-bottom:16px; cursor:pointer; }
+  .h-resume-banner .rb-title { font-size:13.5px; font-weight:800; }
+  .h-resume-banner .rb-sub { font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+  .h-resume-banner .rb-btn { margin-left:auto; background:var(--accent); color:#0B0B0D; border:none; border-radius:100px; padding:8px 16px; font-size:12px; font-weight:800; flex-shrink:0; }
+
+  /* ===== Onboarding stepper ===== */
+  .ob-skip { position:absolute; top:20px; right:20px; z-index:10; background:none; border:none; color:var(--text-muted); font-family:'Manrope',sans-serif; font-size:13px; font-weight:700; cursor:pointer; padding:8px 12px; }
+  .ob-slide { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 32px 0; min-height:60vh; text-align:center; }
+  .ob-flame { font-size:60px; filter:drop-shadow(0 0 24px rgba(255,78,31,0.5)); margin-bottom:20px; }
+  .ob-wordmark { font-family:'Anton',sans-serif; font-size:42px; letter-spacing:0.03em; background:linear-gradient(155deg,var(--accent-hot),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .ob-tagline { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; margin-top:10px; }
+  .ob-desc { font-size:14px; line-height:1.6; margin-top:24px; max-width:300px; opacity:0.92; }
+  .ob-title { font-family:'Anton',sans-serif; font-size:24px; text-transform:uppercase; }
+  .ob-title span { color:var(--accent-hot); }
+  .ob-sub { font-size:13.5px; color:var(--text-muted); margin-top:8px; max-width:280px; }
+  .ob-body-stage { position:relative; width:170px; height:300px; margin:24px 0; cursor:pointer; }
+  .ob-body-img { width:100%; height:100%; object-fit:contain; }
+  .ob-highlight { position:absolute; inset:0; width:100%; height:100%; background:var(--accent); mix-blend-mode:screen; opacity:0.85; -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; transition:opacity 0.15s ease, transform 0.15s ease; transform-origin:center; }
+  .ob-body-stage.tapped .ob-highlight { opacity:1; transform:scale(1.04); }
+  .ob-body-stage.tapped .ob-body-img { transform:scale(1.02); }
+  .ob-body-img { transition:transform 0.15s ease; }
+  .ob-callout { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent-hot); background:var(--surface); border:1px solid var(--hairline); border-radius:100px; padding:7px 14px; }
+  .ob-bottom { padding:22px 28px 30px; }
+  .ob-dots { display:flex; justify-content:center; gap:7px; margin-bottom:18px; }
+  .ob-dot { width:7px; height:7px; border-radius:50%; background:var(--hairline); }
+  .ob-dot.active { width:22px; background:var(--accent); border-radius:4px; }
+
   /* ===== Home view ===== */
   .h-wordmark { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.25em; color:var(--accent); text-transform:uppercase; }
   .h-greeting-row { display:flex; justify-content:space-between; align-items:flex-end; margin-top:6px; }
@@ -289,9 +316,9 @@
   .w-p-tag { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; color:var(--text-muted); background:var(--surface-alt); padding:3px 8px; border-radius:100px; }
   .w-lock-note { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:var(--accent-hot); margin-top:8px; }
   .w-lock-note a { color:var(--accent-hot); text-decoration:underline; cursor:pointer; }
-  .w-check { width:22px; height:22px; border-radius:50%; flex-shrink:0; border:1.5px solid var(--hairline); margin-left:4px; }
-  .w-program-card.selected .w-check { background:var(--accent); border-color:var(--accent); display:flex; align-items:center; justify-content:center; color:#0B0B0D; font-size:12px; font-weight:900; }
-  .w-program-card.selected .w-check::after { content:'✓'; }
+  .w-p-check { width:22px; height:22px; border-radius:50%; flex-shrink:0; border:1.5px solid var(--hairline); margin-left:4px; }
+  .w-program-card.selected .w-p-check { background:var(--accent); border-color:var(--accent); display:flex; align-items:center; justify-content:center; color:#0B0B0D; font-size:12px; font-weight:900; }
+  .w-program-card.selected .w-p-check::after { content:'✓'; }
 
   /* Assign Week sub-screen */
   .w-tray { display:flex; gap:8px; flex-wrap:wrap; }
@@ -656,7 +683,15 @@
     if (already) return;
     await seedExercises();
     await seedAchievements();
-    await saveProfile({ name: null, equipmentAccess: null, memberSince: new Date().toISOString() });
+    await saveProfile({
+      name: null, equipmentAccess: null, memberSince: new Date().toISOString(),
+      goal: null,
+      // onboardingComplete: finished the whole flow, banner never shows again.
+      // onboardingDismissed: skipped at least once -- distinct from "never seen it",
+      // so Home doesn't auto-relaunch the modal every visit after a skip.
+      // onboardingStep: which screen to resume at if they come back via the banner.
+      onboardingComplete: false, onboardingDismissed: false, onboardingStep: 0
+    });
     await setAppState('seeded', true);
   }
 
@@ -911,6 +946,16 @@
   async function renderHome(container) {
     container.innerHTML = '<div style="padding:60px 24px;text-align:center;color:#8A8A8F;font-size:13px;">Loading…</div>';
 
+    // First-ever visit: launch onboarding automatically. If they skipped it
+    // before (onboardingDismissed), never auto-relaunch -- show a resume
+    // banner further down instead.
+    const onboardingProfile = await getProfile();
+    if (onboardingProfile && !onboardingProfile.onboardingComplete && !onboardingProfile.onboardingDismissed) {
+      navigate('onboarding');
+      return;
+    }
+    const showResumeBanner = onboardingProfile && !onboardingProfile.onboardingComplete && onboardingProfile.onboardingDismissed;
+
     const results = await Promise.all([
       getProgram(), isProgramExpired(), getRecentWorkoutLogs(5),
       getWorkoutLogsSince(7), getMuscleGroupCounts(30), getCurrentStreak(), getExercises()
@@ -928,17 +973,24 @@
     const recentHtml = buildRecentWorkouts(recentLogs);
     const ringHtml = buildConsistencyRing(program, weekLogs.length);
     const renewalHtml = expired ? buildRenewalPrompt(program) : '';
+    const firstName = (onboardingProfile && onboardingProfile.name) ? onboardingProfile.name.split(' ')[0] : 'there';
+    const resumeBannerHtml = showResumeBanner
+      ? '<div class="h-resume-banner" data-action="resume-onboarding"><div><div class="rb-title">You\'re mid-setup</div><div class="rb-sub">Finish choosing your plan</div></div><button class="rb-btn">Continue</button></div>'
+      : '';
 
     container.innerHTML =
       '<header><div class="h-wordmark">IGNITE</div>' +
-      '<div class="h-greeting-row"><div class="h-greeting">Let\'s work,<br><span>Tens.</span></div>' +
+      '<div class="h-greeting-row"><div class="h-greeting">Let\'s work,<br><span>' + firstName + '.</span></div>' +
       '<div class="h-date-tag">' + WEEKDAY_LABELS[todayIndex] + ' · TODAY</div></div>' +
       '<div class="h-flame-divider"></div></header>' +
       '<main class="h-main">' +
-        pulseHtml + renewalHtml + calendarHtml + heroHtml +
+        resumeBannerHtml + pulseHtml + renewalHtml + calendarHtml + heroHtml +
         '<div class="h-section-head"><h2>Recent workouts</h2><a data-nav="workouts">See all</a></div>' +
         recentHtml + ringHtml +
       '</main>';
+
+    const resumeBtn = container.querySelector('[data-action="resume-onboarding"]');
+    if (resumeBtn) resumeBtn.addEventListener('click', function () { navigate('onboarding'); });
 
     container.querySelectorAll('[data-nav]').forEach(function (el) {
       el.addEventListener('click', function () { navigate(el.dataset.nav); });
@@ -1102,6 +1154,226 @@
     }
   };
 
+  // ---------- Equipment / Program / Assign Week (shared, reusable) ----------
+  // Originally lived only inside Workouts' closure. Hoisted to shared scope so
+  // the onboarding flow can drive the exact same screens instead of duplicating
+  // them -- every navigation decision (what happens on save/back) is passed in
+  // via `opts`, so each caller controls its own flow without forking the UI.
+
+  let pendingProgramType = null;
+
+  async function showEquipmentSetup(container, opts) {
+    const profile = await getProfile();
+    const current = profile && profile.equipmentAccess;
+
+    container.innerHTML =
+      '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
+      '<div><div style="font-size:17px;font-weight:800;">What do you have access to?</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + (opts.stepLabel || 'This shapes your programs and exercise library') + '</div></div></div>' +
+      '<main class="w-main" style="padding-top:18px;">' +
+        EQUIPMENT_OPTIONS.map(function (opt) {
+          return '<div class="w-option-card ' + (opt.id === current ? 'selected' : '') + '" data-opt="' + opt.id + '">' +
+            '<div class="w-opt-icon">' + opt.icon + '</div>' +
+            '<div style="flex:1;"><div class="w-opt-name">' + opt.name + '</div><div class="w-opt-desc">' + opt.desc + '</div></div>' +
+            '<div class="w-check">' + (opt.id === current ? '✓' : '') + '</div>' +
+          '</div>';
+        }).join('') +
+        '<button class="w-cta-btn ' + (current ? 'enabled' : '') + '" data-save>' + (opts.ctaLabel || 'Save') + '</button>' +
+      '</main>';
+
+    let selected = current;
+    const cards = container.querySelectorAll('.w-option-card');
+    const saveBtn = container.querySelector('[data-save]');
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        cards.forEach(function (c) { c.classList.remove('selected'); c.querySelector('.w-check').textContent = ''; });
+        card.classList.add('selected');
+        card.querySelector('.w-check').textContent = '✓';
+        selected = card.dataset.opt;
+        saveBtn.classList.add('enabled');
+      });
+    });
+    saveBtn.addEventListener('click', async function () {
+      saveBtn.textContent = 'Saving…';
+      await saveProfile(Object.assign({}, profile, { equipmentAccess: selected }));
+      opts.onDone();
+    });
+    container.querySelector('[data-back]').addEventListener('click', opts.onBack);
+  }
+
+  async function showChooseProgram(container, opts) {
+    const profile = await getProfile();
+    const eqAccess = profile && profile.equipmentAccess;
+
+    container.innerHTML =
+      '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
+      '<div><div style="font-size:17px;font-weight:800;">Choose your program</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + (opts.stepLabel || 'Pick a structure — you can edit any day later') + '</div></div></div>' +
+      '<main class="w-main" style="padding-top:18px;">' +
+        PROGRAM_DEFS.map(function (p) {
+          const fits = p.equipment === 'both' || !eqAccess || p.equipment === eqAccess;
+          const tagsHtml = p.tags.map(function (t) { return '<span class="w-p-tag">' + t + '</span>'; }).join('');
+          return '<div class="w-program-card ' + (fits ? '' : 'locked') + (opts.preselect === p.id ? ' selected' : '') + '" data-program="' + p.id + '">' +
+            '<div class="w-p-icon">' + p.icon + '</div>' +
+            '<div class="w-p-body"><div class="w-p-top"><div class="w-p-name">' + p.name + '</div>' +
+            (p.freq ? '<div class="w-p-freq">' + p.freq + '</div>' : '') + '</div>' +
+            '<div class="w-p-desc">' + p.desc + '</div>' +
+            (tagsHtml ? '<div class="w-p-tags">' + tagsHtml + '</div>' : '') +
+            (fits ? '' : '<div class="w-lock-note">🔒 Needs ' + (p.equipment === 'bodyweight' ? 'no-equipment' : 'equipment') + ' access — <a data-change-eq>change setup</a></div>') +
+            '</div><div class="w-p-check"></div></div>';
+        }).join('') +
+        '<button class="w-cta-btn' + (opts.preselect ? ' enabled' : '') + '" data-continue>Continue</button>' +
+      '</main>';
+
+    let selected = opts.preselect || null;
+    const cards = container.querySelectorAll('.w-program-card');
+    const continueBtn = container.querySelector('[data-continue]');
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        if (card.classList.contains('locked')) return;
+        cards.forEach(function (c) { c.classList.remove('selected'); });
+        card.classList.add('selected');
+        selected = card.dataset.program;
+        continueBtn.classList.add('enabled');
+      });
+    });
+    container.querySelectorAll('[data-change-eq]').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.stopPropagation(); opts.onChangeEquipment(); });
+    });
+    continueBtn.addEventListener('click', function () {
+      if (!selected) return;
+      pendingProgramType = selected;
+      opts.onDone(selected);
+    });
+    container.querySelector('[data-back]').addEventListener('click', opts.onBack);
+  }
+
+  async function showAssignWeek(container, programType, opts) {
+    const chips = CHIP_SETS[programType] || CHIP_SETS.ppl;
+    const existingProgram = await getProgram();
+    const days = [
+      ['mon', 'MON'], ['tue', 'TUE'], ['wed', 'WED'], ['thu', 'THU'], ['fri', 'FRI'], ['sat', 'SAT'], ['sun', 'SUN']
+    ];
+
+    container.innerHTML =
+      '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
+      '<div><div style="font-size:17px;font-weight:800;">Assign your week</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + (opts.stepLabel || (labelForProgramType(programType) + ' — drag onto each day')) + '</div></div></div>' +
+      '<main class="w-main" style="padding-top:18px;">' +
+        '<div class="h-section-head" style="margin-top:0;"><h2 style="font-size:11px;">Workout types</h2></div>' +
+        '<div class="w-tray">' + chips.map(function (c) {
+          return '<div class="w-chip" data-type="' + c.id + '">' + c.icon + ' ' + c.label + '</div>';
+        }).join('') + '</div>' +
+
+        '<div class="h-section-head"><h2 style="font-size:11px;">This pattern repeats</h2></div>' +
+        '<div class="w-duration-toggle">' +
+          '<button data-duration="weekly">WEEKLY</button>' +
+          '<button data-duration="monthly" class="active">MONTHLY</button>' +
+          '<button data-duration="yearly">YEARLY</button>' +
+        '</div>' +
+
+        '<div class="h-section-head"><h2 style="font-size:11px;">Your weekly pattern</h2></div>' +
+        '<div class="w-week-grid">' + days.map(function (d) {
+          return '<div class="w-day-slot" data-day="' + d[0] + '"><div class="w-day-label">' + d[1] + '</div>' +
+            '<div class="w-day-content">Tap a type below, then this day</div><div class="w-day-clear">✕</div></div>';
+        }).join('') + '</div>' +
+        '<div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;text-align:center;">Tap a workout type, then tap a day to assign it. Tap ✕ to clear a day.</div>' +
+
+        '<button class="w-cta-btn" data-save style="margin-bottom:20px;">' + (opts.ctaLabel || 'Save calendar') + '</button>' +
+      '</main>';
+
+    const pattern = {};
+    let selectedDuration = 'monthly';
+    let activeChip = null;
+    const chipEls = container.querySelectorAll('.w-chip');
+    const slotEls = container.querySelectorAll('.w-day-slot');
+    const saveBtn = container.querySelector('[data-save]');
+
+    function chipMeta(id) { return chips.filter(function (c) { return c.id === id; })[0]; }
+    function applyToSlot(slot, typeId) {
+      const meta = chipMeta(typeId);
+      slot.dataset.fill = typeId;
+      slot.classList.add('filled');
+      const content = slot.querySelector('.w-day-content');
+      content.textContent = meta ? meta.icon + ' ' + meta.label : typeId;
+      content.classList.add('assigned');
+      pattern[slot.dataset.day] = typeId;
+      updateSave();
+    }
+    function clearSlot(slot) {
+      delete slot.dataset.fill;
+      slot.classList.remove('filled');
+      const content = slot.querySelector('.w-day-content');
+      content.textContent = 'Tap a type below, then this day';
+      content.classList.remove('assigned');
+      delete pattern[slot.dataset.day];
+      updateSave();
+    }
+    function updateSave() {
+      const filled = Object.keys(pattern).length;
+      const base = opts.ctaLabel || 'Save calendar';
+      saveBtn.classList.toggle('enabled', filled > 0);
+      saveBtn.textContent = filled > 0 ? base + ' (' + filled + ' of 7 assigned)' : base;
+    }
+
+    // Pre-fill priority: an existing program of the SAME type (editing, not
+    // starting fresh) beats any suggested default; a caller-supplied default
+    // (e.g. onboarding's Goal-informed suggestion) is used only when there's
+    // nothing real to edit yet.
+    if (existingProgram && existingProgram.programType === programType) {
+      Object.assign(pattern, existingProgram.weekdayPattern);
+      selectedDuration = existingProgram.duration || 'monthly';
+    } else if (opts.defaultPattern) {
+      Object.assign(pattern, opts.defaultPattern);
+      selectedDuration = opts.defaultDuration || 'monthly';
+    }
+    if (Object.keys(pattern).length > 0) {
+      container.querySelectorAll('.w-duration-toggle button').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.duration === selectedDuration);
+      });
+      slotEls.forEach(function (slot) {
+        const t = pattern[slot.dataset.day];
+        if (t) applyToSlot(slot, t);
+      });
+    }
+
+    chipEls.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chipEls.forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        activeChip = chip.dataset.type;
+      });
+    });
+    slotEls.forEach(function (slot) {
+      slot.addEventListener('click', function () {
+        if (!activeChip) return;
+        applyToSlot(slot, activeChip);
+      });
+      slot.querySelector('.w-day-clear').addEventListener('click', function (e) {
+        e.stopPropagation();
+        clearSlot(slot);
+      });
+    });
+    container.querySelectorAll('.w-duration-toggle button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        container.querySelectorAll('.w-duration-toggle button').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        selectedDuration = btn.dataset.duration;
+      });
+    });
+
+    updateSave();
+    saveBtn.addEventListener('click', async function () {
+      if (Object.keys(pattern).length === 0) return;
+      days.forEach(function (d) { if (!pattern[d[0]]) pattern[d[0]] = 'rest'; });
+      saveBtn.textContent = 'Saving…';
+      await saveProgram({ programType: programType, weekdayPattern: pattern, duration: selectedDuration });
+      opts.onDone();
+    });
+
+    container.querySelector('[data-back]').addEventListener('click', opts.onBack);
+  }
+
   async function renderWorkouts(container) {
     async function showLanding() {
       container.innerHTML = '<div style="padding:60px 24px;text-align:center;color:#8A8A8F;font-size:13px;">Loading…</div>';
@@ -1157,214 +1429,23 @@
       if (calEmptyLink) calEmptyLink.addEventListener('click', function () { showSub('choose-program'); });
     }
 
-    async function showEquipmentSetup() {
-      const profile = await getProfile();
-      const current = profile && profile.equipmentAccess;
-
-      container.innerHTML =
-        '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
-        '<div><div style="font-size:17px;font-weight:800;">What do you have access to?</div>' +
-        '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">This shapes your programs and exercise library</div></div></div>' +
-        '<main class="w-main" style="padding-top:18px;">' +
-          EQUIPMENT_OPTIONS.map(function (opt) {
-            return '<div class="w-option-card ' + (opt.id === current ? 'selected' : '') + '" data-opt="' + opt.id + '">' +
-              '<div class="w-opt-icon">' + opt.icon + '</div>' +
-              '<div style="flex:1;"><div class="w-opt-name">' + opt.name + '</div><div class="w-opt-desc">' + opt.desc + '</div></div>' +
-              '<div class="w-check">' + (opt.id === current ? '✓' : '') + '</div>' +
-            '</div>';
-          }).join('') +
-          '<button class="w-cta-btn ' + (current ? 'enabled' : '') + '" data-save>Save</button>' +
-        '</main>';
-
-      let selected = current;
-      const cards = container.querySelectorAll('.w-option-card');
-      const saveBtn = container.querySelector('[data-save]');
-      cards.forEach(function (card) {
-        card.addEventListener('click', function () {
-          cards.forEach(function (c) { c.classList.remove('selected'); c.querySelector('.w-check').textContent = ''; });
-          card.classList.add('selected');
-          card.querySelector('.w-check').textContent = '✓';
-          selected = card.dataset.opt;
-          saveBtn.classList.add('enabled');
-        });
-      });
-      saveBtn.addEventListener('click', async function () {
-        saveBtn.textContent = 'Saving…';
-        await saveProfile(Object.assign({}, profile, { equipmentAccess: selected }));
-        showLanding();
-      });
-      container.querySelector('[data-back]').addEventListener('click', showLanding);
+    function goEquipmentSetup() {
+      return showEquipmentSetup(container, { onDone: showLanding, onBack: showLanding });
     }
-
-    // Carries the selected program type from Choose Program into Assign Week —
-    // local to this render call, not persisted until Assign Week actually saves.
-    let pendingProgramType = null;
-
-    async function showChooseProgram() {
-      const profile = await getProfile();
-      const eqAccess = profile && profile.equipmentAccess;
-
-      container.innerHTML =
-        '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
-        '<div><div style="font-size:17px;font-weight:800;">Choose your program</div>' +
-        '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Pick a structure — you can edit any day later</div></div></div>' +
-        '<main class="w-main" style="padding-top:18px;">' +
-          PROGRAM_DEFS.map(function (p) {
-            const fits = p.equipment === 'both' || !eqAccess || p.equipment === eqAccess;
-            const tagsHtml = p.tags.map(function (t) { return '<span class="w-p-tag">' + t + '</span>'; }).join('');
-            return '<div class="w-program-card ' + (fits ? '' : 'locked') + '" data-program="' + p.id + '">' +
-              '<div class="w-p-icon">' + p.icon + '</div>' +
-              '<div class="w-p-body"><div class="w-p-top"><div class="w-p-name">' + p.name + '</div>' +
-              (p.freq ? '<div class="w-p-freq">' + p.freq + '</div>' : '') + '</div>' +
-              '<div class="w-p-desc">' + p.desc + '</div>' +
-              (tagsHtml ? '<div class="w-p-tags">' + tagsHtml + '</div>' : '') +
-              (fits ? '' : '<div class="w-lock-note">🔒 Needs ' + (p.equipment === 'bodyweight' ? 'no-equipment' : 'equipment') + ' access — <a data-change-eq>change setup</a></div>') +
-              '</div><div class="w-check"></div></div>';
-          }).join('') +
-          '<button class="w-cta-btn" data-continue>Continue</button>' +
-        '</main>';
-
-      let selected = null;
-      const cards = container.querySelectorAll('.w-program-card');
-      const continueBtn = container.querySelector('[data-continue]');
-      cards.forEach(function (card) {
-        card.addEventListener('click', function () {
-          if (card.classList.contains('locked')) return;
-          cards.forEach(function (c) { c.classList.remove('selected'); });
-          card.classList.add('selected');
-          selected = card.dataset.program;
-          continueBtn.classList.add('enabled');
-        });
+    function goChooseProgram() {
+      return showChooseProgram(container, {
+        onDone: function (selected) { goAssignWeek(selected); },
+        onBack: showLanding,
+        onChangeEquipment: function () {
+          showEquipmentSetup(container, { onDone: goChooseProgram, onBack: goChooseProgram });
+        }
       });
-      container.querySelectorAll('[data-change-eq]').forEach(function (el) {
-        el.addEventListener('click', function (e) { e.stopPropagation(); showEquipmentSetup(); });
-      });
-      continueBtn.addEventListener('click', function () {
-        if (!selected) return;
-        pendingProgramType = selected;
-        showAssignWeek();
-      });
-      container.querySelector('[data-back]').addEventListener('click', showLanding);
     }
-
-    async function showAssignWeek() {
-      const programType = pendingProgramType || 'ppl';
-      const chips = CHIP_SETS[programType] || CHIP_SETS.ppl;
-      const existingProgram = await getProgram();
-      const days = [
-        ['mon', 'MON'], ['tue', 'TUE'], ['wed', 'WED'], ['thu', 'THU'], ['fri', 'FRI'], ['sat', 'SAT'], ['sun', 'SUN']
-      ];
-
-      container.innerHTML =
-        '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
-        '<div><div style="font-size:17px;font-weight:800;">Assign your week</div>' +
-        '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + labelForProgramType(programType) + ' — drag onto each day</div></div></div>' +
-        '<main class="w-main" style="padding-top:18px;">' +
-          '<div class="h-section-head" style="margin-top:0;"><h2 style="font-size:11px;">Workout types</h2></div>' +
-          '<div class="w-tray">' + chips.map(function (c) {
-            return '<div class="w-chip" data-type="' + c.id + '">' + c.icon + ' ' + c.label + '</div>';
-          }).join('') + '</div>' +
-
-          '<div class="h-section-head"><h2 style="font-size:11px;">This pattern repeats</h2></div>' +
-          '<div class="w-duration-toggle">' +
-            '<button data-duration="weekly">WEEKLY</button>' +
-            '<button data-duration="monthly" class="active">MONTHLY</button>' +
-            '<button data-duration="yearly">YEARLY</button>' +
-          '</div>' +
-
-          '<div class="h-section-head"><h2 style="font-size:11px;">Your weekly pattern</h2></div>' +
-          '<div class="w-week-grid">' + days.map(function (d) {
-            return '<div class="w-day-slot" data-day="' + d[0] + '"><div class="w-day-label">' + d[1] + '</div>' +
-              '<div class="w-day-content">Tap a type below, then this day</div><div class="w-day-clear">✕</div></div>';
-          }).join('') + '</div>' +
-          '<div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;text-align:center;">Tap a workout type, then tap a day to assign it. Tap ✕ to clear a day.</div>' +
-
-          '<button class="w-cta-btn" data-save style="margin-bottom:20px;">Save calendar</button>' +
-        '</main>';
-
-      const pattern = {};
-      let selectedDuration = 'monthly';
-      let activeChip = null;
-      const chipEls = container.querySelectorAll('.w-chip');
-      const slotEls = container.querySelectorAll('.w-day-slot');
-      const saveBtn = container.querySelector('[data-save]');
-
-      // Pre-fill from an existing program of the SAME type, if editing rather than starting fresh
-      if (existingProgram && existingProgram.programType === programType) {
-        Object.assign(pattern, existingProgram.weekdayPattern);
-        selectedDuration = existingProgram.duration || 'monthly';
-        container.querySelectorAll('.w-duration-toggle button').forEach(function (b) {
-          b.classList.toggle('active', b.dataset.duration === selectedDuration);
-        });
-        slotEls.forEach(function (slot) {
-          const t = pattern[slot.dataset.day];
-          if (t) applyToSlot(slot, t);
-        });
-      }
-
-      function chipMeta(id) { return chips.filter(function (c) { return c.id === id; })[0]; }
-
-      function applyToSlot(slot, typeId) {
-        const meta = chipMeta(typeId);
-        slot.dataset.fill = typeId;
-        slot.classList.add('filled');
-        const content = slot.querySelector('.w-day-content');
-        content.textContent = meta ? meta.icon + ' ' + meta.label : typeId;
-        content.classList.add('assigned');
-        pattern[slot.dataset.day] = typeId;
-        updateSave();
-      }
-      function clearSlot(slot) {
-        delete slot.dataset.fill;
-        slot.classList.remove('filled');
-        const content = slot.querySelector('.w-day-content');
-        content.textContent = 'Tap a type below, then this day';
-        content.classList.remove('assigned');
-        delete pattern[slot.dataset.day];
-        updateSave();
-      }
-      function updateSave() {
-        const filled = Object.keys(pattern).length;
-        saveBtn.classList.toggle('enabled', filled > 0);
-        saveBtn.textContent = filled > 0 ? 'Save calendar (' + filled + ' of 7 assigned)' : 'Save calendar';
-      }
-
-      chipEls.forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          chipEls.forEach(function (c) { c.classList.remove('active'); });
-          chip.classList.add('active');
-          activeChip = chip.dataset.type;
-        });
+    function goAssignWeek(programType) {
+      return showAssignWeek(container, programType || pendingProgramType || 'ppl', {
+        onDone: showLanding,
+        onBack: goChooseProgram
       });
-      slotEls.forEach(function (slot) {
-        slot.addEventListener('click', function () {
-          if (!activeChip) return;
-          applyToSlot(slot, activeChip);
-        });
-        slot.querySelector('.w-day-clear').addEventListener('click', function (e) {
-          e.stopPropagation();
-          clearSlot(slot);
-        });
-      });
-      container.querySelectorAll('.w-duration-toggle button').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          container.querySelectorAll('.w-duration-toggle button').forEach(function (b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          selectedDuration = btn.dataset.duration;
-        });
-      });
-
-      updateSave();
-      saveBtn.addEventListener('click', async function () {
-        if (Object.keys(pattern).length === 0) return;
-        // fill any un-assigned days as rest so Home's weekday lookup never hits undefined
-        days.forEach(function (d) { if (!pattern[d[0]]) pattern[d[0]] = 'rest'; });
-        saveBtn.textContent = 'Saving…';
-        await saveProgram({ programType: programType, weekdayPattern: pattern, duration: selectedDuration });
-        showLanding();
-      });
-
-      container.querySelector('[data-back]').addEventListener('click', showChooseProgram);
     }
 
 
@@ -1492,33 +1573,15 @@
       container.querySelector('[data-back]').addEventListener('click', showLanding);
     }
 
-    function showStub(title, icon, message) {
-      container.innerHTML =
-        '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
-        '<div style="font-size:17px;font-weight:800;">' + title + '</div></div>' +
-        '<div class="w-stub"><div class="s-icon">' + icon + '</div>' +
-        '<div class="s-title">Coming next</div><div class="s-sub">' + message + '</div></div>';
-      container.querySelector('[data-back]').addEventListener('click', showLanding);
-    }
-
     function showSub(name) {
-      if (name === 'equipment-setup') return showEquipmentSetup();
-      if (name === 'choose-program') return showChooseProgram();
-      if (name === 'assign-week') { pendingProgramType = null; return showAssignWeek(); }
+      if (name === 'equipment-setup') return goEquipmentSetup();
+      if (name === 'choose-program') return goChooseProgram();
+      if (name === 'assign-week') return goAssignWeek(pendingProgramType);
       if (name === 'muscle-map') return showMuscleMap();
       return showLanding();
     }
 
     showLanding();
-  }
-
-  function renderPlaceholder(name) {
-    return async function (container) {
-      container.innerHTML =
-        '<div class="placeholder-view"><div class="p-eyebrow">' + name + '</div>' +
-        '<div class="p-title">Shell is working 🔥</div>' +
-        '<div class="p-sub">This is a placeholder — the real ' + name + ' view plugs in here next.</div></div>';
-    };
   }
 
   // ---------- Active Workout view (real) ----------
@@ -1571,8 +1634,8 @@
         setsHtml +=
           '<div class="aw-set-row">' +
             '<div class="aw-set-num">' + (s + 1) + '</div>' +
-            '<div class="aw-set-field"><input type="number" inputmode="numeric" class="aw-reps" value="' + reps + '"><span>reps</span></div>' +
-            '<div class="aw-set-field"><input type="number" inputmode="decimal" class="aw-weight" value="' + weight + '"><span>kg</span></div>' +
+            '<div class="aw-set-field"><input type="number" inputmode="numeric" min="0" class="aw-reps" value="' + reps + '"><span>reps</span></div>' +
+            '<div class="aw-set-field"><input type="number" inputmode="decimal" min="0" class="aw-weight" value="' + weight + '"><span>kg</span></div>' +
           '</div>';
       }
 
@@ -1608,8 +1671,8 @@
       const exercises = Array.prototype.slice.call(main.querySelectorAll('.aw-ex-card')).map(function (card) {
         const sets = Array.prototype.slice.call(card.querySelectorAll('.aw-set-row')).map(function (row) {
           return {
-            reps: parseInt(row.querySelector('.aw-reps').value, 10) || 0,
-            weight: parseFloat(row.querySelector('.aw-weight').value) || 0
+            reps: Math.max(0, parseInt(row.querySelector('.aw-reps').value, 10) || 0),
+            weight: Math.max(0, parseFloat(row.querySelector('.aw-weight').value) || 0)
           };
         });
         return { exerciseId: card.dataset.exerciseId, exerciseName: card.dataset.exerciseName, sets: sets };
@@ -2058,12 +2121,244 @@
     });
   }
 
+  // ---------- Goal step (new) ----------
+  // Scoped to weighting regional training volume/emphasis in the generated
+  // week -- NOT picking individual exercises. See docs/issues/002 for why:
+  // physiqueAffinity is a per-region constant, and Lion/Rabbit never lead
+  // any region in that data -- they're lighter variants of Bear/Wolf, not
+  // independent directions. The copy below says so honestly.
+  const GOAL_OPTIONS = [
+    { id: 'bear', icon: '🐻', name: 'Bear', desc: 'Build size and raw strength.' },
+    { id: 'lion', icon: '🦁', name: 'Lion', desc: 'Build strength, staying lighter on volume.' },
+    { id: 'wolf', icon: '🐺', name: 'Wolf', desc: 'Move fast, stay lean, train like an athlete.' },
+    { id: 'rabbit', icon: '🐇', name: 'Rabbit', desc: 'Light, quick, agility-focused — an easier entry point.' }
+  ];
+  function defaultProgramForGoal(goal) {
+    if (goal === 'bear' || goal === 'lion') return 'ppl';
+    if (goal === 'wolf' || goal === 'rabbit') return 'fullBody';
+    return null;
+  }
+
+  async function showGoalStep(container, opts) {
+    const profile = await getProfile();
+    const current = profile && profile.goal;
+
+    container.innerHTML =
+      '<div class="w-topbar"><div class="w-back" data-back>←</div>' +
+      '<div><div style="font-size:17px;font-weight:800;">What is your goal?</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + (opts.stepLabel || '') + '</div></div></div>' +
+      '<main class="w-main" style="padding-top:18px;">' +
+        GOAL_OPTIONS.map(function (opt) {
+          return '<div class="w-option-card ' + (opt.id === current ? 'selected' : '') + '" data-opt="' + opt.id + '">' +
+            '<div class="w-opt-icon">' + opt.icon + '</div>' +
+            '<div style="flex:1;"><div class="w-opt-name">' + opt.name + '</div><div class="w-opt-desc">' + opt.desc + '</div></div>' +
+            '<div class="w-check">' + (opt.id === current ? '✓' : '') + '</div>' +
+          '</div>';
+        }).join('') +
+        '<button class="w-cta-btn ' + (current ? 'enabled' : '') + '" data-continue>Continue</button>' +
+        '<div style="text-align:center;margin-top:14px;"><a href="#" data-skip-goal style="color:var(--text-muted);font-size:12.5px;">No preference for now</a></div>' +
+      '</main>';
+
+    let selected = current;
+    const cards = container.querySelectorAll('.w-option-card');
+    const continueBtn = container.querySelector('[data-continue]');
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        cards.forEach(function (c) { c.classList.remove('selected'); c.querySelector('.w-check').textContent = ''; });
+        card.classList.add('selected');
+        card.querySelector('.w-check').textContent = '✓';
+        selected = card.dataset.opt;
+        continueBtn.classList.add('enabled');
+      });
+    });
+    continueBtn.addEventListener('click', async function () {
+      if (!selected) return;
+      await saveProfile(Object.assign({}, profile, { goal: selected }));
+      opts.onDone(selected);
+    });
+    container.querySelector('[data-skip-goal]').addEventListener('click', async function (e) {
+      e.preventDefault();
+      await saveProfile(Object.assign({}, profile, { goal: null }));
+      opts.onDone(null);
+    });
+    container.querySelector('[data-back]').addEventListener('click', opts.onBack);
+  }
+
+  // ---------- Onboarding stepper (new) ----------
+  // Wraps the existing Equipment/Program/Assign-Week screens rather than
+  // duplicating them -- see docs/issues/001 and 002. Skippable at every
+  // step; if skipped, Home shows a resume banner via profile.onboardingDismissed
+  // and profile.onboardingStep.
+
+  const ONBOARDING_SCREENS = ['welcome', 'musclemap', 'equipment', 'goal', 'choose-program', 'assign-week', 'done'];
+  const ONBOARDING_DOT = [0, 0, 1, 2, 3, 3, 4]; // 7 screens -> 5 conceptual dots
+
+  async function renderOnboarding(container) {
+    const profile = await getProfile();
+    let stepIndex = (profile && profile.onboardingStep) || 0;
+    let chosenGoal = (profile && profile.goal) || null;
+    let chosenProgram = null;
+
+    async function skipOut() {
+      const p = await getProfile();
+      await saveProfile(Object.assign({}, p, { onboardingDismissed: true, onboardingStep: stepIndex }));
+      navigate('home');
+    }
+
+    async function finishOut() {
+      const p = await getProfile();
+      await saveProfile(Object.assign({}, p, { onboardingComplete: true, onboardingDismissed: false }));
+      navigate('home');
+    }
+
+    function dots() {
+      const total = 5;
+      let html = '<div class="ob-dots">';
+      for (let i = 0; i < total; i++) {
+        html += '<div class="ob-dot' + (i === ONBOARDING_DOT[stepIndex] ? ' active' : '') + '"></div>';
+      }
+      return html + '</div>';
+    }
+
+    function goTo(idx) { stepIndex = idx; renderScreen(); }
+
+    async function renderScreen() {
+      const name = ONBOARDING_SCREENS[stepIndex];
+
+      // Lightweight swipe support for the two static intro slides only --
+      // the functional steps (Equipment/Goal/Schedule) have their own
+      // scrollable lists and tap targets, where a horizontal swipe gesture
+      // would fight normal scrolling and option-selection instead of helping.
+      function attachSwipe(el, onSwipeLeft, onSwipeRight) {
+        let startX = null;
+        el.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+        el.addEventListener('touchend', function (e) {
+          if (startX === null) return;
+          const dx = e.changedTouches[0].clientX - startX;
+          if (Math.abs(dx) > 50) { dx < 0 ? onSwipeLeft() : onSwipeRight(); }
+          startX = null;
+        }, { passive: true });
+      }
+
+      if (name === 'welcome') {
+        container.innerHTML =
+          '<button class="ob-skip" id="obSkip">Skip</button>' +
+          '<div class="ob-slide">' +
+            '<div class="ob-flame">🔥</div>' +
+            '<div class="ob-wordmark">IGNITE</div>' +
+            '<div class="ob-tagline">Your body is the interface</div>' +
+            '<p class="ob-desc">Ignite is a workout companion built around one idea: <b>tap a muscle, see how to train it.</b></p>' +
+          '</div>' +
+          '<div class="ob-bottom">' + dots() + '<button class="w-cta-btn enabled" id="obNext">Next</button></div>';
+        document.getElementById('obNext').addEventListener('click', function () { goTo(stepIndex + 1); });
+        document.getElementById('obSkip').addEventListener('click', skipOut);
+        attachSwipe(container.querySelector('.ob-slide'), function () { goTo(stepIndex + 1); }, function () {});
+        return;
+      }
+
+      if (name === 'musclemap') {
+        container.innerHTML =
+          '<button class="ob-skip" id="obSkip">Skip</button>' +
+          '<div class="ob-slide">' +
+            '<div class="ob-title">Meet your <span>muscle map</span></div>' +
+            '<p class="ob-sub">Every muscle is tappable — front and back. Try tapping the highlighted chest below.</p>' +
+            '<div class="ob-body-stage" id="obBodyStage">' +
+              '<img class="ob-body-img" src="data:image/png;base64,' + BODY_IMG_FRONT_B64 + '">' +
+              '<div class="ob-highlight" id="obHighlight" style="-webkit-mask-image:url(data:image/png;base64,' + MUSCLE_MAP_MASKS.front.chest + ');mask-image:url(data:image/png;base64,' + MUSCLE_MAP_MASKS.front.chest + ');"></div>' +
+            '</div>' +
+            '<div class="ob-callout" id="obCallout">👆 Tap the highlighted chest</div>' +
+          '</div>' +
+          '<div class="ob-bottom">' + dots() + '<button class="w-cta-btn enabled" id="obNext">Let\'s set up your plan</button></div>';
+        document.getElementById('obNext').addEventListener('click', function () { goTo(stepIndex + 1); });
+        document.getElementById('obSkip').addEventListener('click', skipOut);
+        attachSwipe(container.querySelector('.ob-slide'), function () { goTo(stepIndex + 1); }, function () { goTo(stepIndex - 1); });
+
+        // The chest area is a real tap target here -- it doesn't navigate
+        // anywhere (this is a demo, not the actual Muscle Map), but it gives
+        // the exact confirming feedback the copy promises, instead of being
+        // a dead, confusing tap like before.
+        const bodyStage = document.getElementById('obBodyStage');
+        const callout = document.getElementById('obCallout');
+        bodyStage.addEventListener('click', function () {
+          bodyStage.classList.add('tapped');
+          callout.textContent = '✓ That\'s the idea — this is real, on every muscle';
+          setTimeout(function () { bodyStage.classList.remove('tapped'); }, 260);
+        });
+        return;
+      }
+
+      if (name === 'equipment') {
+        await showEquipmentSetup(container, {
+          stepLabel: 'Step 1 of 4 — this shapes which exercises you\'ll see',
+          onDone: function () { goTo(stepIndex + 1); },
+          onBack: function () { goTo(stepIndex - 1); }
+        });
+        container.insertAdjacentHTML('beforeend', dots());
+        return;
+      }
+
+      if (name === 'goal') {
+        await showGoalStep(container, {
+          stepLabel: 'Step 2 of 4',
+          onDone: function (goal) { chosenGoal = goal; goTo(stepIndex + 1); },
+          onBack: function () { goTo(stepIndex - 1); }
+        });
+        container.insertAdjacentHTML('beforeend', dots());
+        return;
+      }
+
+      if (name === 'choose-program') {
+        await showChooseProgram(container, {
+          stepLabel: 'Step 3 of 4 — pre-picked based on your goal, change anytime',
+          preselect: defaultProgramForGoal(chosenGoal),
+          onDone: function (selected) { chosenProgram = selected; goTo(stepIndex + 1); },
+          onBack: function () { goTo(stepIndex - 1); },
+          onChangeEquipment: function () { goTo(2); }
+        });
+        container.insertAdjacentHTML('beforeend', dots());
+        return;
+      }
+
+      if (name === 'assign-week') {
+        const defaultPattern = chosenProgram === 'fullBody'
+          ? { mon: 'full', wed: 'full', fri: 'full' }
+          : { mon: 'push', tue: 'pull', wed: 'legs', thu: 'rest', fri: 'push', sat: 'pull', sun: 'rest' };
+        await showAssignWeek(container, chosenProgram || 'ppl', {
+          stepLabel: 'Step 4 of 4 — pre-filled, edit anything',
+          ctaLabel: 'Finish setup',
+          defaultPattern: defaultPattern,
+          defaultDuration: 'monthly',
+          onDone: function () { goTo(stepIndex + 1); },
+          onBack: function () { goTo(stepIndex - 1); }
+        });
+        container.insertAdjacentHTML('beforeend', dots());
+        return;
+      }
+
+      if (name === 'done') {
+        container.innerHTML =
+          '<div class="ob-slide">' +
+            '<div class="ob-flame">🔥</div>' +
+            '<div class="ob-title">You are all set</div>' +
+            '<p class="ob-sub">Your plan is ready. Head to Home to start your first workout.</p>' +
+          '</div>' +
+          '<div class="ob-bottom"><button class="w-cta-btn enabled" id="obFinish">Go to Home</button></div>';
+        document.getElementById('obFinish').addEventListener('click', finishOut);
+        return;
+      }
+    }
+
+    renderScreen();
+  }
+
+
   const views = {
     home: { render: renderHome },
     workouts: { render: renderWorkouts },
     progress: { render: renderProgress },
     profile: { render: renderProfile },
-    activeWorkout: { render: renderActiveWorkout }
+    activeWorkout: { render: renderActiveWorkout },
+    onboarding: { render: renderOnboarding }
   };
 
   /* =========================================================================
