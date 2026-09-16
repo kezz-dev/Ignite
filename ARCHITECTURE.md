@@ -11,8 +11,10 @@ Everything lives in one file, `ignite.html`, structured internally as:
             1. Manifest generation (data: URI)
             2. Service worker registration (Blob URL)
             3. Data layer (IndexedDB wrapper + all read/write functions)
-            4. Embedded assets (two body-render images, 15 region masks,
-               the 330-exercise library — all as base64/JSON constants)
+            4. Embedded assets (two body-render images, 15 region masks
+            as base64). The exercise library is not an embedded JSON
+            blob; it lives in IndexedDB (`exercises`) and is loaded
+            by uploading a JSON file.
             5. Shared helpers (REGION_LABELS, TYPE_MUSCLE_GROUPS, etc.)
             6. Each view's render() function (Home, Workouts, Progress, Profile,
                Active Workout)
@@ -47,7 +49,7 @@ exist. This keeps the shell genuinely dumb and each tab's complexity contained.
 |---|---|---|
 | `profile` | Single record (id=1) | name, equipmentAccess, memberSince |
 | `program` | Single record (id=1), the active calendar plan | weekdayPattern, duration, expiresAt |
-| `exercises` | The 330-exercise library | Indexed by `primaryRegions` (multiEntry) |
+| `exercises` | The 330-exercise library | Runtime store. Populated by JSON upload, not by a baked-in blob. Indexed by `primaryRegions` (multiEntry). Fresh install is empty until a file is uploaded (seed + admin gate is follow-up work). |
 | `workoutLogs` | Every *completed* session | Only ever written by `logCompletedWorkout()` — never for scheduled/planned sessions |
 | `achievements` | One-time unlock events | `unlockedAt` stays `null` until earned, then never re-checked |
 | `appState` | Small key/value bucket | Currently just tracks first-run seeding |
